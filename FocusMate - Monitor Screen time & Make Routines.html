@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screen Time Monitor & Routine</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #eaf2f8;
+            color: #2c3e50;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #fff;
+            width: 100%;
+            max-width: 800px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            color: #3498db;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #2980b9;
+        }
+
+        .routine-container, .screen-time-container {
+            background-color: #f9f9f9;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-size: 1rem;
+            color: #34495e;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="time"], input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f1f1f1;
+        }
+
+        button {
+            padding: 12px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .routine-list {
+            margin-top: 20px;
+            list-style: none;
+            padding: 0;
+        }
+
+        .routine-list li {
+            background-color: #ecf0f1;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .routine-list span {
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 30px;
+            background-color: #dcdfe1;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: #3498db;
+            width: 0;
+            transition: width 0.5s ease;
+        }
+
+        .screen-time-summary {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 1.2rem;
+            margin-top: 20px;
+        }
+
+        .screen-time-summary p {
+            margin-bottom: 10px;
+        }
+
+        .screen-time-summary .goal {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .screen-time-summary .total-time {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Screen Time Monitor & Routine</h1>
+
+        <!-- Routine Section -->
+        <div class="routine-container">
+            <h2>Your Routine</h2>
+            <p>Set up your daily routine to help monitor your screen time effectively.</p>
+
+            <div class="input-group">
+                <label for="routineStart">Routine Start Time:</label>
+                <input type="time" id="routineStart">
+            </div>
+
+            <div class="input-group">
+                <label for="routineEnd">Routine End Time:</label>
+                <input type="time" id="routineEnd">
+            </div>
+
+            <button onclick="addRoutine()">Set Routine</button>
+
+            <ul id="routineList" class="routine-list"></ul>
+        </div>
+
+        <!-- Screen Time Section -->
+        <div class="screen-time-container">
+            <h2>Track Your Screen Time</h2>
+            <label for="screenTime">Enter Screen Time (in minutes):</label>
+            <input type="number" id="screenTime" min="1" placeholder="Minutes spent on screen">
+
+            <button onclick="logScreenTime()">Log Screen Time</button>
+
+            <div class="screen-time-summary">
+                <p>Daily Goal: <span class="goal">480 minutes</span></p>
+                <p>Total Screen Time Today: <span id="totalTime" class="total-time">0</span> minutes</p>
+
+                <div class="progress-bar-container">
+                    <div id="progressBar" class="progress-bar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let totalScreenTime = 0;
+        const dailyGoal = 480; // 8 hours in minutes
+
+        // Function to log screen time
+        function logScreenTime() {
+            const screenTimeInput = document.getElementById('screenTime');
+            const time = parseInt(screenTimeInput.value);
+
+            if (isNaN(time) || time <= 0) {
+                alert("Please enter a valid screen time.");
+                return;
+            }
+
+            totalScreenTime += time;
+            updateScreenTime();
+            screenTimeInput.value = ''; // Clear input field
+        }
+
+        // Function to update screen time display and progress bar
+        function updateScreenTime() {
+            document.getElementById('totalTime').textContent = totalScreenTime;
+            const progress = Math.min((totalScreenTime / dailyGoal) * 100, 100);
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        // Function to add routine to the list
+        function addRoutine() {
+            const routineStart = document.getElementById('routineStart').value;
+            const routineEnd = document.getElementById('routineEnd').value;
+
+            if (!routineStart || !routineEnd) {
+                alert("Please set both start and end times.");
+                return;
+            }
+
+            const routineList = document.getElementById('routineList');
+            const routineItem = document.createElement('li');
+            routineItem.innerHTML = `
+                <span>Start: ${routineStart} | End: ${routineEnd}</span>
+            `;
+            routineList.appendChild(routineItem);
+
+            // Clear the inputs
+            document.getElementById('routineStart').value = '';
+            document.getElementById('routineEnd').value = '';
+        }
+
+        // Initialize with default values
+        updateScreenTime();
+    </script>
+</body>
+</html>
